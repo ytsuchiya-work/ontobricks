@@ -5,247 +5,432 @@
 <h1 align="center">OntoBricks 0.4.0</h1>
 
 <p align="center">
-  <strong>Digital Twin Builder for Databricks</strong>
+  <strong>Databricks向けデジタルツインビルダー</strong>
 </p>
 
 <p align="center">
   <img src="https://img.shields.io/badge/python-3.10+-blue.svg" alt="Python">
   <img src="https://img.shields.io/badge/fastapi-0.109+-green.svg" alt="FastAPI">
+  <img src="https://img.shields.io/badge/language-日本語対応-red.svg" alt="Japanese">
 </p>
 
-## Project Description
+---
 
-OntoBricks is a web application that transforms Databricks tables into a materialized knowledge graph. It lets you design ontologies (OWL), map them to Unity Catalog tables via R2RML, materialize triples into a Delta-backed triple store and a Lakebase Postgres graph engine, reason over the graph (OWL 2 RL, SWRL, SHACL), and query it through an auto-generated GraphQL API. The entire pipeline — from metadata import to a queryable knowledge graph — can run in four clicks using LLM-powered automation.
+> **このフォークについて**
+> このリポジトリは [databrickslabs/ontobricks](https://github.com/databrickslabs/ontobricks) を日本語対応させたフォークです。UIのラベル、メッセージ、ドキュメントをすべて日本語に翻訳しています。
+> デプロイ先: https://ontobricks-ytcy-7474645908464260.aws.databricksapps.com
 
-## Project Support
+---
 
-Please note that all projects in the /databrickslabs github account are provided for your exploration only, and are not formally supported by Databricks with Service Level Agreements (SLAs). They are provided AS-IS and we do not make any guarantees of any kind. Please do not submit a support ticket relating to any issues arising from the use of these projects.
+## プロジェクト概要
 
-Any issues discovered through the use of this project should be filed as GitHub Issues on the Repo. They will be reviewed as time permits, but there are no formal SLAs for support.
+OntoBricksはDatabricksテーブルを実体化されたナレッジグラフに変換するWebアプリケーションです。オントロジー（OWL）を設計し、R2RMLでUnity Catalogテーブルにマッピングし、Delta対応トリプルストアとLakebase Postgresグラフエンジンにトリプルを実体化し、グラフに対して推論（OWL 2 RL、SWRL、SHACL）を実行し、自動生成されたGraphQL APIでクエリできます。メタデータのインポートからクエリ可能なナレッジグラフまでのパイプライン全体を、LLMによる自動化を使ってわずか4クリックで実行できます。
 
-## Building the Project
+## プロジェクトサポート
 
-OntoBricks uses [uv](https://docs.astral.sh/uv/) for dependency management. All dependencies are declared in `pyproject.toml`.
+このプロジェクトは `/databrickslabs` GitHubアカウントの探索用として提供されており、Databricksによる正式なサポート（SLA）はありません。AS-ISで提供され、いかなる保証もありません。
+
+問題を発見した場合はリポジトリのGitHub Issuesに報告してください。時間の許す限りレビューされますが、公式SLAはありません。
+
+---
+
+## アーキテクチャ
+
+```mermaid
+graph TB
+    subgraph "Databricks Apps"
+        UI["OntoBricks FastAPI\n(ontobricks-ytcy)"]
+        MCP["MCPサーバー\n(mcp-ontobricks-ytcy)"]
+    end
+
+    subgraph "Unity Catalog"
+        VOL["UCボリューム\nレジストリストレージ"]
+        DT["Deltaテーブル\nトリプルストア"]
+        META["メタデータ\n(テーブル・カラム定義)"]
+    end
+
+    subgraph "Lakebase (Postgres) - オプション"
+        REG["レジストリスキーマ\n(ドメイン・バージョン)"]
+        GRAPH["グラフスキーマ\n(RDFトリプル)"]
+    end
+
+    subgraph "SQL Warehouse"
+        WH["Serverless Warehouse"]
+    end
+
+    subgraph "LLMエージェント"
+        LLM["Databricks Model Serving\n(OWLジェネレーター・自動マッピング)"]
+    end
+
+    UI --> VOL
+    UI --> WH
+    UI --> REG
+    UI --> GRAPH
+    UI --> LLM
+    WH --> DT
+    WH --> META
+    MCP --> UI
+    UI --> MCP
+```
+
+### レイヤー構成
+
+```
+HTTPリクエスト
+    ↓
+FastAPIルート (src/api/, src/back/routes/)
+    ↓
+ドメインクラス (src/back/objects/)
+    ├── Ontology   — OWL/RDFS/SHACL設計
+    ├── Mapping    — R2RML生成・SQL検証
+    ├── DigitalTwin — ナレッジグラフ同期・SPARQL
+    ├── Domain     — UCへの保存・読み込み
+    └── Registry   — ドメインカタログ
+    ↓
+コアインフラ (src/back/core/)
+    ├── SQLWarehouse — Databricks SQLコネクタ
+    ├── LakebaseAuth — Postgres JWT認証
+    ├── GraphDB      — トリプルストア抽象レイヤー
+    └── AgentClient  — LLMエージェント呼び出し
+```
+
+---
+
+## 前提条件
+
+- Python 3.10以上
+- Databricks Apps が有効なワークスペース
+- SQLウェアハウス（IDが必要）
+- **Unity Catalog ボリューム**（ドメインレジストリ用）
+- **Databricks Lakebase Autoscaling**（v0.4.0以降、レジストリとグラフDB用。省略可能 — ボリュームのみモードで動作）
+- Databricks CLI >= 1.0.0（`brew install databricks`）
+
+---
+
+## ビルド方法
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd OntoBricks
+# リポジトリのクローン
+git clone https://github.com/ytsuchiya-work/ontobricks.git
+cd ontobricks
 
-# Install dependencies (uv resolves them from pyproject.toml)
+# 依存関係のインストール（uvを使用）
 uv sync
 
-# Or use the setup script
+# またはセットアップスクリプトを使用
 scripts/setup.sh
 ```
 
-### Prerequisites
+---
 
-- Python 3.10 or higher
-- Databricks workspace access (Databricks Apps must be enabled). Local
-  development uses a Personal Access Token; production uses the App's
-  service principal.
-- A SQL Warehouse (you'll need its ID for local dev).
-- **Databricks Lakebase Autoscaling** project + branch + Postgres
-  database — **required since v0.4.0** for the domain registry
-  (domains, versions, permissions, schedules, global config) and the
-  Graph DB triple store. Provisioned Lakebase instances are **not**
-  supported. The Postgres driver (`psycopg[binary]` + `psycopg-pool`)
-  is declared as an optional dependency so volume-only forks can opt
-  out — install with `uv sync --extra lakebase` for any normal
-  deployment.
-- **Unity Catalog Volume** in the catalog/schema that hosts the
-  triplestore VIEWs (`triplestore_<domain>_v<n>`). The volume is
-  reserved for binary artefacts (`documents/` uploads — domain-scoped
-  attachments imported by the ontology designer).
-- `psql` (libpq client) on `PATH` for the Lakebase permission
-  bootstrap scripts (`brew install libpq && brew link --force libpq`
-  on macOS).
+## デプロイ方法
 
-## Deploying / Installing the Project
-
-### Local Development
+### ローカル開発
 
 ```bash
-# Configure credentials
+# 認証情報の設定
 cp .env.example .env
-# Edit .env with your Databricks host, token, and warehouse ID
+# .envにDatabricksホスト、トークン、ウェアハウスIDを記入
 
-# Start the application
+# アプリの起動
 scripts/start.sh
-# Open http://localhost:8000
+# http://localhost:8000 を開く
 ```
 
-### Deploy to Databricks Apps
+### Databricks Appsへのデプロイ
 
 ```bash
-# Install and authenticate the Databricks CLI (>= 0.250.0)
-brew install databricks            # or curl -fsSL https://databricks.com/install.sh | sh
-databricks auth login --host https://<workspace>
+# Databricks CLIのインストールと認証
+brew install databricks
+databricks auth login --host https://<ワークスペースURL>
 
-# Edit scripts/deploy.config.sh (warehouse, registry catalog/schema,
-# Lakebase project/branch/database — see the file header) and then:
-make deploy
-# Or directly: scripts/deploy.sh
+# scripts/deploy.config.sh を編集して以下を設定:
+# - DEFAULT_APP_NAME: アプリ名
+# - DEFAULT_WAREHOUSE_ID: SQLウェアハウスのID
+# - DEFAULT_REGISTRY_CATALOG: Unity Catalogのカタログ名
+# - DEFAULT_REGISTRY_SCHEMA: スキーマ名
+
+# デプロイ実行（ボリュームのみモード — Lakebase不要）
+PATH=/opt/homebrew/bin:$PATH DATABRICKS_CONFIG_PROFILE=<プロファイル名> make deploy-volume
+
+# またはLakebase Postgresモード（フル機能）
+PATH=/opt/homebrew/bin:$PATH DATABRICKS_CONFIG_PROFILE=<プロファイル名> make deploy
 ```
 
-`scripts/deploy.sh` generates `app.yaml` from `app.yaml.template` +
-`scripts/deploy.config.sh`, validates and deploys the DAB bundle on
-target `dev-lakebase`, runs `scripts/bootstrap-app-permissions.sh`
-(app SP `CAN_MANAGE` on itself), then runs
-`scripts/bootstrap-lakebase-perms.sh` on the registry / graph / sync
-schemas. All steps are idempotent.
+#### このリポジトリの設定値（fevm-classic-stable-ytcy ワークスペース）
 
-After the first deploy, bind the **sql-warehouse**, **volume**, and
-**postgres** (Lakebase) resources in the Databricks Apps UI
-(**Compute > Apps > <your-app> > Resources**) if the DAB bind did
-not take. Open the app and click **Settings > Registry > Initialize**
-to create the Lakebase schema; re-run `make bootstrap-lakebase` once
-afterwards so the freshly created schema picks up `USAGE/DML`.
+| 設定 | 値 |
+|------|-----|
+| Databricks Host | `https://fevm-classic-stable-ytcy.cloud.databricks.com` |
+| SQL Warehouse ID | `e351c2d1b16eae95` |
+| カタログ | `classic_stable_ytcy_catalog` |
+| スキーマ | `ontobricks` |
+| ボリューム | `registry` |
+| アプリ名 | `ontobricks-ytcy` |
+| MCPアプリ名 | `mcp-ontobricks-ytcy` |
+| アプリURL | https://ontobricks-ytcy-7474645908464260.aws.databricksapps.com |
 
-> **Lakebase deploy targets.** Pick a Databricks Lakebase Autoscaling
-> project + branch and a Postgres database, then set the
-> `LAKEBASE_PROJECT`, `LAKEBASE_BRANCH`,
-> `LAKEBASE_DATABASE_RESOURCE_SEGMENT` (the `db-…` id from
-> `databricks postgres list-databases "projects/<id>/branches/<branch>" -o json`,
-> **not** the Postgres database name shown in the SQL UI), and
-> `LAKEBASE_REGISTRY_SCHEMA` defaults in `scripts/deploy.config.sh`.
-> The DAB composes the full Apps `postgres.database` path and binds a
-> `postgres` Apps resource so the runtime auto-injects
-> `PGHOST` / `PGPORT` / `PGDATABASE` / `PGUSER`; the app mints the
-> Lakebase JWT automatically (no user secret required).
+#### デプロイ後の初期設定
 
-> **Upgrading from a pre-v0.4.0 deployment.** Pre-v0.4.0 stored the
-> entire registry as JSON on the Unity Catalog Volume. Run
-> `scripts/migrate-registry-to-lakebase.sh` once before upgrading to
-> v0.4.0+ to copy every JSON-shaped artefact (domains, versions,
-> permissions, schedules, global config) into Lakebase. Binary
-> artefacts on the Volume are left untouched.
+1. **リソースのバインド確認**: Databricks Apps UI で「Compute > Apps > ontobricks-ytcy > Resources」を確認し、`sql-warehouse` と `volume` がバインドされているか確認
+2. **レジストリの初期化**: アプリを開いて「設定 > レジストリ」タブで「初期化」をクリック
+3. **ヘルスチェック**: `https://<アプリURL>/healthz` が HTTP 200 を返すことを確認
 
-> **First deploy only:** `make deploy` runs `scripts/bootstrap-app-permissions.sh` automatically, which grants each app's service principal `CAN_MANAGE` on itself. Without that grant the middleware cannot read the app's own ACL and every first-time visitor — including the deploying `CAN_MANAGE` user — lands on the access-denied page. If you deploy via `databricks bundle deploy` directly, run `make bootstrap-perms` once afterwards (it is idempotent).
+---
 
-See [Deployment Guide](docs/deployment.md) for the full checklist including resource configuration and permissions.
+## アプリの使用方法
 
-## Releasing the Project
+### 自動化パイプライン（4クリック）
 
-1. Ensure all tests pass: `make test`
-2. Update the version in `pyproject.toml`
-3. Commit, tag, and push:
+| ステップ | 操作 | 内容 |
+|----------|------|------|
+| **1** | **メタデータのインポート**（ドメイン > データソース） | Unity Catalogからテーブルとカラムのメタデータを取得 |
+| **2** | **オントロジーの生成**（オントロジー > 生成） | LLMがメタデータからエンティティ・リレーションシップ・属性を設計 |
+| **3** | **自動マッピング**（マッピング > 自動マッピング） | LLMがすべてのエンティティとリレーションシップのSQLマッピングを生成 |
+| **4** | **同期**（デジタルツイン > 概要） | マッピングを実行してトリプルストアにデータを格納 |
+
+### 手動ワークフロー
+
+1. **オントロジーを設計** — OntoVizキャンバスで視覚的にオントロジーを作成、またはOWL/RDFS/業界標準（FIBO、CDISC、IOF）をインポート
+2. **マッピング** — オントロジーのエンティティをDatabricksテーブルにカラムレベルでマッピング
+3. **デジタルツインのビルド** — トリプルストアにトリプルを実体化（デフォルトは増分更新）
+4. **クエリ** — GraphQLプレイグラウンドで照会、またはインタラクティブなナレッジグラフを探索
+5. **推論** — OWL 2 RL推論、SWRLルール、SHACLバリデーション、制約チェックを実行
+
+### 画面の説明
+
+#### ホーム画面
+- **現在のドメイン**: 読み込まれているドメイン名と統計（エンティティ数、リレーションシップ数、マッピング数）
+- **ワークフローカード**: 3ステップのパイプライン進捗を視覚的に確認
+- **クイック操作**: 新規作成、管理、データソース、保存、読み込み
+
+#### レジストリ
+- **参照**: 保存されているドメインの一覧と検索
+- **チーム**: ドメインごとのアクセス権限管理（管理者のみ）
+- **スケジューラ**: 自動同期ジョブの設定
+
+#### ドメイン
+- **情報**: ドメイン名・説明・ベースURIの設定
+- **バージョン**: ドメインのスナップショット管理
+- **コックピット**: オントロジー・マッピング・同期の準備状況ダッシュボード
+- **データソース**: Unity Catalogのカタログ・スキーマ・テーブルをインポート
+- **ドキュメント**: PDFや参考資料を添付（LLM用コンテキスト）
+
+#### オントロジー
+- **デザイナー**: ドラッグ＆ドロップでエンティティとリレーションシップを設計（OntoVizキャンバス）
+- **生成**: LLMによるオントロジーの自動生成（AIウィザード）
+- **インポート**: OWL/RDFS/業界標準のインポート
+- **データ品質**: SHACL制約の定義
+- **ビジネスルール**: SWRL推論ルールの作成
+
+#### マッピング
+- **デザイナー**: オントロジーグラフ上でノードをクリックしてマッピング設定
+- **手動**: マッピング状態でグループ化されたツリー表示
+- **自動マッピング**: LLMによる一括SQLマッピング生成
+- **診断**: マッピングの一貫性チェック
+
+#### デジタルツイン
+- **概要**: エンティティ数・リレーションシップ数・最終同期日時・品質状態のダッシュボード
+- **ナレッジグラフ**: インタラクティブなsigma.js WebGLグラフ。検索・フィルタ・クラスター検出
+- **GraphQL**: 自動生成されたGraphQLプレイグラウンド
+- **推論**: OWL 2 RL推論とSWRLルール実行
+
+### ナレッジグラフの操作
+
+| 操作 | 説明 |
+|------|------|
+| クリック | ノードを選択・ハイライト |
+| ドラッグ（背景） | グラフをパン |
+| スクロール | ズームイン/アウト |
+| 右クリック（ノード） | コンテキストメニュー（詳細・ブリッジ・展開） |
+| ホバー（ノード） | 隣接ノードをハイライト |
+
+---
+
+## MCP統合
+
+OntoBricksはModel Context Protocol（MCP）を通じてLLMエージェントにナレッジグラフを公開します。
 
 ```bash
+# MCPサーバーのデプロイ
+make deploy-mcp
+
+# Cursor、Claude Desktop、またはDatabricks Playgroundから接続可能
+```
+
+---
+
+## キーボードショートカット
+
+| ショートカット | 操作 |
+|--------------|------|
+| `Cmd/Ctrl + S` | 現在のドメインを保存 |
+| `Cmd/Ctrl + K` | サイドバー検索にフォーカス |
+| `?` | キーボードショートカット一覧を表示 |
+| `Esc` | アクティブなオーバーレイ/モーダルを閉じる |
+
+---
+
+## 発生したエラーと解決方法
+
+### デプロイ時のエラー
+
+#### エラー1: `legacy databricks CLI detected; upgrade to >= 0.100.0`
+
+**状況**: `make deploy` 実行時にTerraformが古いCLIを検出してデプロイ失敗
+
+**原因**: `DATABRICKS_CLI_PATH` 環境変数がvirtualenv内の古いDatabricks CLI（v0.18.0）を指していた。新しいCLI（v1.1.0）がTerraform経由でデプロイするとき、PATHの先頭にある古いCLIが選ばれてしまう。
+
+**解決方法**:
+```bash
+# PATHを調整して新しいCLIを優先させる
+PATH=/opt/homebrew/bin:$PATH DATABRICKS_CONFIG_PROFILE=<プロファイル名> make deploy-volume
+```
+
+**補足**: `DATABRICKS_CLI_PATH=` で空にするだけでは不十分。PATHの順序を変える必要がある。
+
+---
+
+#### エラー2: `Unable to authenticate: stored credentials from older CLI versions are no longer used`
+
+**状況**: `databricks auth describe` で認証エラー
+
+**原因**: 以前のCLIバージョンで保存された認証情報が新しいCLIと互換性がない
+
+**解決方法**:
+```bash
+databricks auth login --host https://<ワークスペースURL> -p <プロファイル名>
+```
+
+---
+
+#### エラー3: `volumes create` コマンドのフラグエラー
+
+**状況**: `databricks volumes create --catalog-name ...` でエラー
+
+**原因**: Databricks CLI v1.1.0では位置引数を使用する
+
+**解決方法**:
+```bash
+# 正しい形式
+databricks volumes create CATALOG_NAME SCHEMA_NAME VOLUME_NAME MANAGED -p <プロファイル名>
+```
+
+---
+
+### アプリ動作時のエラー
+
+#### エラー4: アクセス拒否ページ（`bootstrap` 理由）
+
+**状況**: 初回デプロイ後にすべてのユーザーがアクセス拒否ページを見る
+
+**原因**: アプリのサービスプリンシパルに自身のアプリへの `CAN_MANAGE` 権限がない
+
+**解決方法**:
+```bash
+# make deploy / make deploy-volume では自動実行されるが、
+# databricks bundle deploy を直接使った場合は手動実行が必要
+make bootstrap-perms
+```
+
+---
+
+#### エラー5: レジストリが空 / ドメインが表示されない
+
+**状況**: アプリを開いてもドメイン一覧が空
+
+**解決方法**:
+1. 「設定」→「レジストリ」タブを開く
+2. 「初期化」ボタンをクリック
+
+---
+
+#### エラー6: SQLウェアハウスアイコンがグレー/黄色
+
+**解決方法**:
+1. 「設定」→「Databricks」タブを開く
+2. 適切なウェアハウスを選択して保存
+3. ウェアハウスが `RUNNING` 状態になるまで待機
+
+---
+
+## リリース手順
+
+```bash
+# 1. テストの実行
+make test
+
+# 2. pyproject.tomlのバージョンを更新
+
+# 3. コミットとタグ
 git add -A && git commit -m "Release vX.Y.Z"
 git tag vX.Y.Z
 git push origin main --tags
+
+# 4. デプロイ
+PATH=/opt/homebrew/bin:$PATH make deploy-volume
 ```
 
-4. Deploy the new version: `make deploy`
+---
 
-## Using the Project
+## プロジェクト構造
 
-### Automated Pipeline (4 clicks)
-
-| Step | Action | What Happens |
-|------|--------|--------------|
-| **1** | **Import Metadata** (Domain > Metadata) | Fetches table and column metadata from Unity Catalog |
-| **2** | **Generate Ontology** (Ontology > Wizard) | LLM designs entities, relationships, and attributes from your metadata |
-| **3** | **Auto-Map** (Mapping > Auto-Map) | LLM generates SQL mappings for every entity and relationship |
-| **4** | **Synchronize** (Digital Twin > Status) | Executes mappings and populates the triple store |
-
-### Domain & registry (0.1.2 UX)
-
-- **Ontology Designer** — the main ontology graph view lives under **Ontology → Designer** (visual canvas + AI Assistant).
-- **Domain Cockpit (Validation)** — **Active Version** shows which registry version is exposed via **API / MCP**; it can differ from the version you have loaded in the editor.
-- **Registry → Browse** — only place to **set the Active (API/MCP) version** for a domain; **Domain → Versions** shows that status as a read-only badge.
-- **New domain** — after **New Domain**, a full-page loading overlay runs until Domain Information finishes its first load.
-- **Domain Information** — triple-store / snapshot / local graph paths update when you **commit** the domain name (blur or change) or change version (aligned with naming rules before save).
-- **Duplicate names** — **Save to Unity Catalog** is blocked if the sanitized domain name already exists in the registry (inline check + confirmation before POST).
-- **Navbar** — domain name and version in the top bar refresh after load, save, clear, import, and version switches (browser cache invalidated on those actions).
-
-### Graph DB engine (Settings → Graph DB)
-
-The **graph** triple-store backend is pluggable; the abstraction (`GraphDBFactory` / `GraphDBBackend`) is preserved so additional engines can be added in the future. Today only one engine ships:
-
-- **Lakebase (Postgres)** — default; **three Postgres objects per domain version** (`*_sync` bulk-data table, `*__app` companion for reasoning/cohort writes, `g_<dom>_v<n>` UNION view for reads) inside a configurable Postgres schema on the **App-bound** Lakebase database (same connection as the optional Lakebase registry backend). Requires the `lakebase` extra (`uv sync --extra lakebase`) so `psycopg` is installed.
-
-Engine-specific options are stored as global JSON (`graph_engine_config`). For Lakebase the supported keys are **`database`** (optional override of `PGDATABASE`), **`schema`** (optional, default `ontobricks_graph`), **`sync_mode`** (`app_managed` default, or `managed_synced` to delegate bulk ingest to a Databricks Lakeflow snapshot pipeline), **`sync_table_mode`** (`snapshot` / `triggered` / `continuous` — `snapshot` is the recommended mode), **`sync_timeout_s`** (default 600), **`sync_uc_catalog`** (UC catalog the synced table is registered in; defaults to the snapshot Delta catalog when unset), and **`sync_uc_schema`** (UC schema segment for the synced-table FQN; defaults to the registry UC schema so the Lakeflow object lands in the same UC namespace as other registry artefacts). See `docs/lakebase-graphdb.md` for the full reference.
-
-> **Lakebase permission grants (three schemas).** The app service principal needs `USAGE + DML` on up to three Postgres schemas — each covered by one run of `scripts/bootstrap-lakebase-perms.sh`:
->
-> | Schema | When to run | Deploy config var |
-> |---|---|---|
-> | Registry schema (e.g. `ontobricks_registry`) | After `Settings → Registry → Initialize` | `LAKEBASE_BOOTSTRAP_SCHEMA` |
-> | Graph schema (e.g. `ontobricks_graph`) | After first Digital Twin `Build` | `LAKEBASE_GRAPH_SCHEMA` |
-> | Sync schema (e.g. `ontobricks`) | After first Lakeflow snapshot (`managed_synced` only) | `LAKEBASE_SYNC_SCHEMA` |
->
-> `scripts/deploy.sh` calls the bootstrap for all three automatically. If the Graph DB is on a **separate Lakebase instance** from the registry, set `LAKEBASE_GRAPH_PROJECT`, `LAKEBASE_GRAPH_BRANCH`, and `LAKEBASE_GRAPH_DATABASE` in `scripts/deploy.config.sh` so the second and third grants target the correct instance.
-
-> **Lakebase build performance.** When the active engine is Lakebase, the Digital Twin build streams warehouse rows in `fetchmany` batches (`SQLWarehouse.iter_rows`) and ingests them via `COPY FROM STDIN` into a per-batch temp table followed by `INSERT … ON CONFLICT DO NOTHING` (and the symmetrical `DELETE … USING` for incremental removes). The FastAPI process never holds the full graph or the full diff: snapshot CTAS and `EXCEPT` execution stay warehouse-side, the app pipes one batch at a time. There is no Volume archive thread — Postgres is the system of record for the graph.
-
-> **Lakebase managed-synced mode.** When `graph_engine_config.sync_mode = "managed_synced"`, the bulk R2RML data movement is moved entirely off the app: a Databricks Lakeflow snapshot pipeline keeps a Postgres synced table in lock-step with the R2RML view, and the FastAPI process only orchestrates (`SyncedTableManager.ensure` + `trigger_and_wait`). Reasoning + cohort writes stay on the direct PG path through a writable companion table; readers see both via a UNION view (back-compat name). PG layout per graph version: `g_<dom>_v<n>_sync` (Lakeflow), `g_<dom>_v<n>__app` (app), `g_<dom>_v<n>` (UNION view). See `docs/graphdb-integration.md §9` for the full architecture.
-
-### Manual Workflow
-
-1. **Design** an ontology visually using the OntoViz canvas, or import OWL/RDFS/industry standards (FIBO, CDISC, IOF, HL7 FHIR R4/R4B/R5)
-2. **Map** ontology entities to Databricks tables with column-level precision
-3. **Build** the Digital Twin — materializes triples into the triple store (incremental by default)
-4. **Query** through the GraphQL playground or explore the interactive knowledge graph
-5. **Reason** over the graph — run OWL 2 RL inference, SWRL rules, SHACL validation, and constraint checks
-
-### Knowledge Graph Features
-
-- **Two-phase search** — preview matching entities in a flat list, then select specific ones to expand into the full graph with relationships and neighbors
-- **Configurable search depth** — control the maximum traversal depth and entity cap for graph expansion
-- **Right-click "Expand neighbours"** — enrich the current graph in place with N-hop neighbours of any selected node (depth follows the right-pane Depth slider, default 2); newly added entities are highlighted and the camera zooms to frame them, with a non-blocking spinner in the canvas top-right while the request runs
-- **Bridge navigation** — follow cross-domain bridges to automatically switch domains and focus on the target entity in the knowledge graph
-- **Data cluster detection** — detect communities in the knowledge graph using Louvain, Label Propagation, or Greedy Modularity algorithms; available client-side (Graphology) for the visible subgraph and server-side (NetworkX) for the full graph; cluster results can be visualized with color-by-cluster mode and collapsed into super-nodes
-- **Cohort discovery** — group entities that travel together using rule-based linkage (shared resources via predicates) and compatibility constraints (same-value, value-equals, value-in, value-range); deterministic, explainable cohorts with live counters, why/why-not explainers, and idempotent materialisation as graph triples (`:inCohort`) or Unity Catalog Delta tables. See [`docs/cohort_discovery.md`](docs/cohort_discovery.md).
-- **Data quality violation limits** — cap the number of violations displayed per rule (configurable via dropdown, default 10) for faster quality checks
-- **Per-rule progress tracking** — SWRL inference and data quality checks report progress for each individual rule
-
-### AI Assistant
-
-The **Ontology Designer** view (**Ontology → Designer**) includes a floating AI Assistant (bottom-right of the canvas) that lets you modify your ontology through natural language commands — add entities, remove orphans, list relationships, and more. Conversation history is maintained within the session.
-
-### Navigation & Performance
-
-- **Deep-linked sidebar sections** — shareable URLs, browser Back/Forward support
-- **Breadcrumb navigation** — always see your position (Registry > Domain > Ontology > Section)
-- **Keyboard shortcuts** — `Cmd/Ctrl+S` save, `Cmd/Ctrl+K` search, `?` help overlay
-- **SQL connection pooling** — reusable database connections, no per-query TLS handshake
-- **CSRF protection** — double-submit cookie for all state-changing requests
-- **Structured JSON logging** — set `LOG_FORMAT=json` for production-grade observability
-
-### MCP Integration
-
-OntoBricks exposes the knowledge graph to LLM agents via the [Model Context Protocol](https://modelcontextprotocol.io/). Deploy the companion `mcp-ontobricks` app and connect from Cursor, Claude Desktop, or the Databricks Playground.
-
-### Registry OBX Export / Import (UI)
-
-Export one or more domains directly from **Registry → Browse** to a portable
-`.obx` file with per-domain version-mode selection (Latest / Active / All /
-Choose). Import with per-domain conflict resolution (Skip / Overwrite / Rename).
-No command line required — ideal for ad-hoc transfers and cross-tenant sharing.
-
-### Registry Import / Export (CLI)
-
-For automated promotion pipelines use the
-`scripts/registry_transfer.sh` command-line tool — export a curated subset
-of domains/versions from a source registry into a `.zip`, then preview and
-commit it into the target registry. See
-[Registry Import / Export](docs/import-export.md) for the full reference,
-examples, and a comparison of the OBX UI vs CLI approaches.
-
-### Ontology Pitfalls Detector
-
-Detect 19 structural, logical, and semantic pitfalls (P1.1–P4.7) in your
-ontology from the **Ontology → Pitfalls** sidebar panel. Fast graph-only
-checks run immediately; ML-heavy checks (semantic similarity, NLP naming)
-require installing the optional extra:
-
-```bash
-uv sync --extra pitfalls
+```
+ontobricks/
+├── src/
+│   ├── api/              # REST API エンドポイント
+│   ├── back/
+│   │   ├── core/         # インフラ（SQLWarehouse、LakebaseAuth、GraphDB）
+│   │   ├── objects/      # ドメインクラス（Ontology、Mapping、DigitalTwin）
+│   │   └── routes/       # FastAPIルート
+│   ├── front/
+│   │   ├── config/       # menu_config.json（日本語翻訳済み）
+│   │   ├── static/       # JS、CSS、画像
+│   │   └── templates/    # Jinja2テンプレート（日本語翻訳済み）
+│   ├── agents/           # LLMエージェント実装
+│   ├── shared/           # 共有ユーティリティ
+│   └── mcp-server/       # MCPコンパニオンサーバー
+├── scripts/
+│   ├── deploy.sh         # デプロイオーケストレーター
+│   ├── deploy.config.sh  # デプロイ設定（ワークスペース固有）
+│   └── bootstrap-*.sh    # 権限ブートストラップスクリプト
+├── tests/                # テストスイート
+├── docs/                 # ドキュメント
+├── databricks.yml        # Databricks Asset Bundle設定
+└── app.yaml.template     # Databricks Apps設定テンプレート
 ```
 
-### Documentation
+---
 
-Full documentation is available in [`docs/`](docs/README.md). For a comprehensive feature list and architecture details, see [INFO.md](docs/INFO.md).
+## 技術スタック
+
+| レイヤー | 技術 |
+|----------|------|
+| バックエンド | Python 3.10+、FastAPI、RDFLib、OWL-RL、Strawberry GraphQL |
+| フロントエンド | Jinja2、Bootstrap 5.3、バニラJS、Sigma.js、Graphology |
+| プラットフォーム | Databricks Apps、Unity Catalog、SQLウェアハウス |
+| LLM | Databricks Model Serving（OWLジェネレーター、自動マッピング） |
+| グラフDB | Lakebase Postgres（オプション）またはDelta（トリプルストア） |
+| プロトコル | MCP、R2RML、OWL 2、SHACL、SWRL |
+
+---
+
+## ドキュメント
+
+詳細なドキュメントは [`docs/`](docs/README.md) で確認できます。
+
+- [デプロイガイド](docs/deployment.md)
+- [Lakebase GraphDB](docs/lakebase-graphdb.md)
+- [レジストリのインポート/エクスポート](docs/import-export.md)
+- [コホート発見](docs/cohort_discovery.md)
+- [完全なフィーチャーリスト](docs/INFO.md)
+
+---
+
+## ライセンス
+
+[Databricksライセンス](LICENSE.txt)参照
+
+---
+
+*このリポジトリはOntoBricksの日本語対応フォークです。元のプロジェクトは [databrickslabs/ontobricks](https://github.com/databrickslabs/ontobricks) で公開されています。*

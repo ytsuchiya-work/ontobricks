@@ -7,20 +7,20 @@
     "menus": [
         {
             "id": "registry",
-            "label": "Registry",
+            "label": "レジストリ",
             "icon": "bi-archive",
             "route": "/registry/",
             "requires_domain_saved": false,
             "status_indicator": null,
             "navbar_actions": [
                 {
-                    "label": "New Domain",
+                    "label": "新規ドメイン",
                     "icon": "bi-file-earmark-plus",
                     "action": "domainNew",
                     "element_id": null
                 },
                 {
-                    "label": "Load Domain",
+                    "label": "ドメインを読み込む",
                     "icon": "bi-cloud-download",
                     "action": "domainLoad",
                     "element_id": null
@@ -29,26 +29,26 @@
             "groups": [
                 {
                     "id": "registry-domains",
-                    "title": "Domains",
+                    "title": "ドメイン",
                     "icon": "bi-folder2-open",
                     "items": [
                         {
                             "id": "domains",
-                            "label": "Browse",
+                            "label": "参照",
                             "icon": "bi-search",
                             "default": true,
                             "requires": null
                         },
                         {
                             "id": "bridges",
-                            "label": "Bridges",
+                            "label": "ブリッジ",
                             "icon": "bi-signpost-split",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "teams",
-                            "label": "Teams",
+                            "label": "チーム",
                             "icon": "bi-people",
                             "default": false,
                             "requires": null,
@@ -58,12 +58,12 @@
                 },
                 {
                     "id": "registry-automation",
-                    "title": "Automation",
+                    "title": "自動化",
                     "icon": "bi-clock-history",
                     "items": [
                         {
                             "id": "schedule",
-                            "label": "Scheduler",
+                            "label": "スケジューラ",
                             "icon": "bi-clock-history",
                             "default": false,
                             "requires": null
@@ -72,7 +72,7 @@
                 },
                 {
                     "id": "registry-developer",
-                    "title": "Developer",
+                    "title": "開発者",
                     "icon": "bi-code-square",
                     "items": [
                         {
@@ -89,14 +89,14 @@
 
         {
             "id": "domain",
-            "label": "Domain",
+            "label": "ドメイン",
             "icon": "bi-folder2",
             "route": "/domain/",
             "requires_domain_saved": false,
             "status_indicator": null,
             "navbar_actions": [
                 {
-                    "label": "Save Domain",
+                    "label": "ドメインを保存",
                     "icon": "bi-cloud-upload",
                     "action": "domainSave",
                     "element_id": "menuSaveDomain"
@@ -105,40 +105,40 @@
             "groups": [
                 {
                     "id": "domain-main",
-                    "title": "Domain details",
+                    "title": "ドメイン詳細",
                     "icon": "bi-folder2-open",
                     "items": [
                         {
                             "id": "information",
-                            "label": "Information",
+                            "label": "情報",
                             "icon": "bi-info-circle",
                             "default": true,
                             "requires": null
                         },
                         {
                             "id": "versions",
-                            "label": "Versions",
+                            "label": "バージョン",
                             "icon": "bi-clock-history",
                             "default": false,
                             "requires": "domain_saved"
                         },
                         {
                             "id": "validation",
-                            "label": "Cockpit",
+                            "label": "コックピット",
                             "icon": "bi-speedometer2",
                             "default": false,
                             "requires": "domain_saved"
                         },
                         {
                             "id": "metadata",
-                            "label": "Data Sources",
+                            "label": "データソース",
                             "icon": "bi-database",
                             "default": false,
                             "requires": "domain_saved"
                         },
                         {
                             "id": "documents",
-                            "label": "Documents",
+                            "label": "ドキュメント",
                             "icon": "bi-file-earmark-text",
                             "default": false,
                             "requires": "domain_saved"
@@ -147,19 +147,19 @@
                 },
                 {
                     "id": "domain-design",
-                    "title": "Design",
+                    "title": "デザイン",
                     "icon": "bi-pencil-square",
                     "items": [
                         {
                             "id": "ontology-link",
-                            "label": "Ontology",
+                            "label": "オントロジー",
                             "icon": "bi-bezier2",
                             "route": "/ontology/",
                             "requires": "domain_saved"
                         },
                         {
                             "id": "mapping-link",
-                            "label": "Mapping",
+                            "label": "マッピング",
                             "icon": "bi-shuffle",
                             "route": "/mapping/",
                             "requires": "domain_saved"
@@ -168,12 +168,12 @@
                 },
                 {
                     "id": "domain-management",
-                    "title": "Management",
+                    "title": "管理",
                     "icon": "bi-gear",
                     "items": [
                         {
                             "id": "sync",
-                            "label": "Build",
+                            "label": "ビルド",
                             "icon": "bi-arrow-repeat",
                             "default": false,
                             "requires": "domain_saved"
@@ -182,7 +182,7 @@
                 },
                 {
                     "id": "domain-w3c",
-                    "title": "W3C Standards",
+                    "title": "W3C標準",
                     "icon": "bi-filetype-xml",
                     "sidebar_only": true,
                     "items": [
@@ -207,7 +207,7 @@
 
         {
             "id": "ontology",
-            "label": "Ontology",
+            "label": "オントロジー",
             "icon": "bi-bezier2",
             "route": "/ontology/",
             "requires_domain_saved": true,
@@ -217,19 +217,19 @@
             "groups": [
                 {
                     "id": "ontology-editor",
-                    "title": "Ontology Design",
+                    "title": "オントロジー設計",
                     "icon": "bi-pencil-square",
                     "items": [
                         {
                             "id": "information",
-                            "label": "Information",
+                            "label": "情報",
                             "icon": "bi-info-circle",
                             "default": true,
                             "requires": null
                         },
                         {
                             "id": "import",
-                            "label": "Import",
+                            "label": "インポート",
                             "icon": "bi-box-arrow-in-down",
                             "default": false,
                             "requires": null,
@@ -237,7 +237,7 @@
                         },
                         {
                             "id": "wizard",
-                            "label": "Generate",
+                            "label": "生成",
                             "icon": "bi-magic",
                             "default": false,
                             "requires": null,
@@ -245,35 +245,35 @@
                         },
                         {
                             "id": "map",
-                            "label": "Designer",
+                            "label": "デザイナー",
                             "icon": "bi-diagram-3",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "groups",
-                            "label": "Groups",
+                            "label": "グループ",
                             "icon": "bi-collection",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "design",
-                            "label": "Business Views",
+                            "label": "ビジネスビュー",
                             "icon": "bi-pencil-square",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "entities",
-                            "label": "Entities",
+                            "label": "エンティティ",
                             "icon": "bi-box",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "relationships",
-                            "label": "Relationships",
+                            "label": "リレーションシップ",
                             "icon": "bi-arrow-left-right",
                             "default": false,
                             "requires": null
@@ -282,40 +282,40 @@
                 },
                 {
                     "id": "ontology-advanced",
-                    "title": "Advanced",
+                    "title": "高度な機能",
                     "icon": "bi-gear",
                     "items": [
                         {
                             "id": "dataquality",
-                            "label": "Data Quality",
+                            "label": "データ品質",
                             "icon": "bi-shield-check",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "swrl",
-                            "label": "Business Rules",
+                            "label": "ビジネスルール",
                             "icon": "bi-lightning",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "cohorts",
-                            "label": "Cohorts",
+                            "label": "コホート",
                             "icon": "bi-people-fill",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "axioms",
-                            "label": "Expr. & Axioms",
+                            "label": "式・公理",
                             "icon": "bi-diagram-2",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "pitfalls",
-                            "label": "Pitfalls",
+                            "label": "問題点",
                             "icon": "bi-bug",
                             "default": false,
                             "requires": "domain_saved"
@@ -324,7 +324,7 @@
                 },
                 {
                     "id": "ontology-w3c",
-                    "title": "W3C Standards",
+                    "title": "W3C標準",
                     "icon": "bi-filetype-xml",
                     "items": [
                         {
@@ -341,7 +341,7 @@
 
         {
             "id": "assignment",
-            "label": "Mapping",
+            "label": "マッピング",
             "icon": "bi-shuffle",
             "route": "/mapping/",
             "requires_domain_saved": true,
@@ -351,12 +351,12 @@
             "groups": [
                 {
                     "id": "assignment-main",
-                    "title": "Mapping Design",
+                    "title": "マッピング設計",
                     "icon": "bi-link-45deg",
                     "items": [
                         {
                             "id": "information",
-                            "label": "Information",
+                            "label": "情報",
                             "icon": "bi-info-circle",
                             "default": true,
                             "requires": null,
@@ -364,7 +364,7 @@
                         },
                         {
                             "id": "import",
-                            "label": "Import",
+                            "label": "インポート",
                             "icon": "bi-box-arrow-in-down",
                             "default": false,
                             "requires": null,
@@ -372,7 +372,7 @@
                         },
                         {
                             "id": "design",
-                            "label": "Designer",
+                            "label": "デザイナー",
                             "icon": "bi-diagram-3",
                             "default": false,
                             "requires": null,
@@ -380,7 +380,7 @@
                         },
                         {
                             "id": "manual",
-                            "label": "Manual",
+                            "label": "手動",
                             "icon": "bi-list-nested",
                             "default": false,
                             "requires": null,
@@ -388,7 +388,7 @@
                         },
                         {
                             "id": "autoassign",
-                            "label": "Auto-Map",
+                            "label": "自動マッピング",
                             "icon": "bi-lightning-charge",
                             "default": false,
                             "requires": null,
@@ -396,7 +396,7 @@
                         },
                         {
                             "id": "diagnostics",
-                            "label": "Diagnostics",
+                            "label": "診断",
                             "icon": "bi-shield-check",
                             "default": false
                         }
@@ -404,7 +404,7 @@
                 },
                 {
                     "id": "assignment-w3c",
-                    "title": "W3C Standards",
+                    "title": "W3C標準",
                     "icon": "bi-filetype-xml",
                     "items": [
                         {
@@ -430,7 +430,7 @@
 
         {
             "id": "digitaltwin",
-            "label": "Digital Twin",
+            "label": "デジタルツイン",
             "icon": "bi-box-fill",
             "route": "/dtwin/",
             "requires_domain_saved": true,
@@ -439,12 +439,12 @@
             "groups": [
                 {
                     "id": "digitaltwin-insight",
-                    "title": "Insight",
+                    "title": "インサイト",
                     "icon": "bi-bar-chart-line",
                     "items": [
                         {
                             "id": "insight",
-                            "label": "Overview",
+                            "label": "概要",
                             "icon": "bi-bar-chart-line",
                             "default": false,
                             "requires": null
@@ -453,12 +453,12 @@
                 },
                 {
                     "id": "digitaltwin-data",
-                    "title": "Navigation",
+                    "title": "ナビゲーション",
                     "icon": "bi-database",
                     "items": [
                         {
                             "id": "sigmagraph",
-                            "label": "Knowledge Graph",
+                            "label": "ナレッジグラフ",
                             "icon": "bi-layers-half",
                             "default": true,
                             "requires": null
@@ -472,7 +472,7 @@
                         },
                         {
                             "id": "chat",
-                            "label": "Graph Chat",
+                            "label": "グラフチャット",
                             "icon": "bi-chat-dots",
                             "default": false,
                             "requires": null
@@ -481,26 +481,26 @@
                 },
                 {
                     "id": "digitaltwin-advanced",
-                    "title": "Advanced",
+                    "title": "高度な機能",
                     "icon": "bi-gear",
                     "items": [
                         {
                             "id": "dataquality",
-                            "label": "Data Quality",
+                            "label": "データ品質",
                             "icon": "bi-shield-check",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "reasoning",
-                            "label": "Inference",
+                            "label": "推論",
                             "icon": "bi-lightning",
                             "default": false,
                             "requires": null
                         },
                         {
                             "id": "cohorts",
-                            "label": "Cohorts",
+                            "label": "コホート",
                             "icon": "bi-people-fill",
                             "default": false,
                             "requires": null
@@ -518,25 +518,25 @@
             "icon": "bi-server",
             "route": "/settings",
             "element_id": "warehouseStatusLink",
-            "tooltip": "SQL Warehouse – click to configure"
+            "tooltip": "SQLウェアハウス – クリックして設定"
         },
         {
             "id": "tasks",
             "label": null,
             "icon": "bi-hourglass-split",
             "element_id": "taskTrackerToggle",
-            "tooltip": "Background tasks"
+            "tooltip": "バックグラウンドタスク"
         },
         {
             "id": "help",
-            "label": "Help",
+            "label": "ヘルプ",
             "icon": "bi-question-circle",
             "element_id": "helpCenterToggle",
-            "tooltip": "Help & documentation"
+            "tooltip": "ヘルプ＆ドキュメント"
         },
         {
             "id": "settings",
-            "label": "Settings",
+            "label": "設定",
             "icon": "bi-gear-fill",
             "route": "/settings",
             "element_id": null,

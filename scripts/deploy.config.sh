@@ -59,24 +59,24 @@
 # matching `FOO` from the environment instead (see header).
 
 # 1. Apps
-DEFAULT_APP_NAME="ontobricks-030"
-DEFAULT_MCP_APP_NAME="mcp-ontobricks"
+DEFAULT_APP_NAME="ontobricks-ytcy"
+DEFAULT_MCP_APP_NAME="mcp-ontobricks-ytcy"
 DEFAULT_APP_RESOURCE_KEY="ontobricks_dev_app"
 DEFAULT_MCP_APP_RESOURCE_KEY="mcp_ontobricks_app"
 
 # 2. DAB target
-DEFAULT_DAB_TARGET="dev-lakebase"
+DEFAULT_DAB_TARGET="dev"
 
 # 3. DAB variable overrides
-DEFAULT_WAREHOUSE_ID="d2096aa075ad44a3"
-DEFAULT_REGISTRY_CATALOG="benoit_cayla"
-DEFAULT_REGISTRY_SCHEMA="ontobricks_demo"
+DEFAULT_WAREHOUSE_ID="e351c2d1b16eae95"
+DEFAULT_REGISTRY_CATALOG="classic_stable_ytcy_catalog"
+DEFAULT_REGISTRY_SCHEMA="ontobricks"
 DEFAULT_REGISTRY_VOLUME="registry"
-DEFAULT_LAKEBASE_PROJECT="ontobricks-demo2"
+DEFAULT_LAKEBASE_PROJECT="ontobricks-ytcy"
 DEFAULT_LAKEBASE_BRANCH="production"
 # get this value with databricks postgres list-databases "projects/{DEFAULT_LAKEBASE_PROJECT}/branches/{DEFAULT_LAKEBASE_BRANCH}" -o json
-DEFAULT_LAKEBASE_DATABASE_RESOURCE_SEGMENT="db-v6vc-8ibz5oeigo"
-DEFAULT_LAKEBASE_REGISTRY_SCHEMA="ontobricks_demo"
+DEFAULT_LAKEBASE_DATABASE_RESOURCE_SEGMENT="db-placeholder"
+DEFAULT_LAKEBASE_REGISTRY_SCHEMA="ontobricks_registry"
 
 # 3b. Lakebase GRANT bootstrap (registry side)
 # Only the database needs a literal default — instance and schema track
@@ -92,14 +92,17 @@ DEFAULT_LAKEBASE_GRAPH_BRANCH=""     # empty = same as LAKEBASE_BRANCH
 DEFAULT_LAKEBASE_GRAPH_DATABASE=""   # empty = same as LAKEBASE_BOOTSTRAP_DATABASE
 
 # 4. app.yaml runtime fallbacks
-DEFAULT_APP_SQL_WAREHOUSE_FALLBACK="66e8366e84d57752"
-DEFAULT_APP_DATABRICKS_CATALOG="main"
-DEFAULT_APP_DATABRICKS_SCHEMA="default"
-DEFAULT_APP_TRIPLESTORE_TABLE="benoit_cayla.ontobricks.default_triplestore"
-DEFAULT_APP_REGISTRY_CATALOG="benoit_cayla"
+DEFAULT_APP_SQL_WAREHOUSE_FALLBACK="e351c2d1b16eae95"
+DEFAULT_APP_DATABRICKS_CATALOG="classic_stable_ytcy_catalog"
+DEFAULT_APP_DATABRICKS_SCHEMA="ontobricks"
+DEFAULT_APP_TRIPLESTORE_TABLE="classic_stable_ytcy_catalog.ontobricks.default_triplestore"
+DEFAULT_APP_REGISTRY_CATALOG="classic_stable_ytcy_catalog"
 DEFAULT_APP_REGISTRY_SCHEMA="ontobricks"
-DEFAULT_APP_REGISTRY_VOLUME="OntoBricksRegistry"
+DEFAULT_APP_REGISTRY_VOLUME="registry"
 DEFAULT_APP_MLFLOW_TRACKING_URI="databricks"
+
+# Databricks CLI profile to use for this deployment
+export DATABRICKS_CONFIG_PROFILE="${DATABRICKS_CONFIG_PROFILE:-fevm-classic-stable-ytcy}"
 
 # ── 1. Apps ─────────────────────────────────────────────────────────
 # The FastAPI UI app and its MCP companion server.

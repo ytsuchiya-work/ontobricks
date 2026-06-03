@@ -15,11 +15,11 @@
                 <div class="content-section">
 <div class="section-header d-flex justify-content-between align-items-center mb-4">
     <div>
-        <h4 class="mb-1"><i class="bi bi-gear me-2"></i>Settings</h4>
-        <p class="text-muted mb-0 small">Configure Databricks connection, permissions, and global preferences</p>
+        <h4 class="mb-1"><i class="bi bi-gear me-2"></i>設定</h4>
+        <p class="text-muted mb-0 small">Databricks接続、権限、グローバル設定を構成</p>
     </div>
     <button type="button" class="btn btn-primary" id="btnSaveAllSettings">
-        <i class="bi bi-check-circle me-1"></i> Save
+        <i class="bi bi-check-circle me-1"></i> 保存
     </button>
 </div>
 
@@ -35,32 +35,32 @@
     <li class="nav-item" role="presentation" id="tab-permissions-wrapper">
         <button class="nav-link" id="tab-permissions" data-bs-toggle="tab" data-bs-target="#pane-permissions"
                 type="button" role="tab" aria-controls="pane-permissions" aria-selected="false">
-            <i class="bi bi-shield-lock me-1"></i> Permissions
+            <i class="bi bi-shield-lock me-1"></i> 権限
         </button>
     </li>
     <li class="nav-item" role="presentation" id="tab-registry-wrapper">
         <button class="nav-link" id="tab-registry" data-bs-toggle="tab" data-bs-target="#pane-registry"
                 type="button" role="tab" aria-controls="pane-registry" aria-selected="false">
-            <i class="bi bi-archive me-1"></i> Registry
+            <i class="bi bi-archive me-1"></i> レジストリ
         </button>
     </li>
     <li class="nav-item" role="presentation" id="tab-health-wrapper">
         <button class="nav-link" id="tab-health" data-bs-toggle="tab" data-bs-target="#pane-health"
                 type="button" role="tab" aria-controls="pane-health" aria-selected="false">
-            <i class="bi bi-heart-pulse me-1"></i> Health
+            <i class="bi bi-heart-pulse me-1"></i> ヘルス
         </button>
     </li>
     {% endif %}
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-graphdb" data-bs-toggle="tab" data-bs-target="#pane-graphdb"
                 type="button" role="tab" aria-controls="pane-graphdb" aria-selected="false">
-            <i class="bi bi-diagram-3 me-1"></i> Graph DB
+            <i class="bi bi-diagram-3 me-1"></i> グラフDB
         </button>
     </li>
     <li class="nav-item" role="presentation">
         <button class="nav-link" id="tab-global" data-bs-toggle="tab" data-bs-target="#pane-global"
                 type="button" role="tab" aria-controls="pane-global" aria-selected="false">
-            <i class="bi bi-sliders me-1"></i> Global
+            <i class="bi bi-sliders me-1"></i> グローバル
         </button>
     </li>
 </ul>
@@ -72,49 +72,49 @@
             <!-- ==================== DATABRICKS TAB ==================== -->
             <div class="tab-pane fade show active" id="pane-databricks" role="tabpanel" aria-labelledby="tab-databricks">
                 <div id="envNotice" class="alert alert-info hidden-initial">
-                    <i class="bi bi-info-circle"></i> Using credentials from environment
+                    <i class="bi bi-info-circle"></i> 環境変数から認証情報を使用中
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Databricks Host</label>
+                    <label class="form-label fw-semibold">Databricksホスト</label>
                     <div class="form-control-plaintext bg-light p-2 rounded font-monospace" id="currentHostDisplay">
-                        <i class="bi bi-hourglass-split"></i> Loading...
+                        <i class="bi bi-hourglass-split"></i> 読み込み中...
                     </div>
-                    <small class="text-muted">Set via environment variable DATABRICKS_HOST</small>
+                    <small class="text-muted">環境変数 DATABRICKS_HOST で設定</small>
                 </div>
 
                 <div class="mb-4">
-                    <label class="form-label fw-semibold">Authentication</label>
+                    <label class="form-label fw-semibold">認証</label>
                     <div id="tokenStatus" class="d-flex align-items-center gap-2">
                         <span class="badge bg-secondary" id="tokenBadge">
-                            <i class="bi bi-question-circle"></i> Checking...
+                            <i class="bi bi-question-circle"></i> 確認中...
                         </span>
                         <span class="text-muted small" id="authModeDisplay"></span>
                     </div>
-                    <small class="text-muted" id="tokenHelp">Set via environment variable DATABRICKS_TOKEN or OAuth (Databricks Apps)</small>
+                    <small class="text-muted" id="tokenHelp">環境変数 DATABRICKS_TOKEN またはOAuth（Databricks Apps）で設定</small>
                 </div>
 
                 <div class="mb-4">
                     <label class="form-label fw-semibold">
-                        SQL Warehouse
+                        SQLウェアハウス
                         <span class="badge bg-warning-subtle text-warning-emphasis border ms-2 settings-badge-admin-note">
-                            <i class="bi bi-shield-lock me-1"></i>Admin only &ndash; applies to all users
+                            <i class="bi bi-shield-lock me-1"></i>管理者のみ &ndash; 全ユーザーに適用
                         </span>
                     </label>
                     <div class="input-group">
                         <select class="form-select" id="settingsWarehouseSelect">
-                            <option value="">Loading warehouses...</option>
+                            <option value="">ウェアハウスを読み込み中...</option>
                         </select>
-                        <button type="button" class="btn btn-outline-secondary" id="btnRefreshWarehouses" title="Refresh warehouses">
+                        <button type="button" class="btn btn-outline-secondary" id="btnRefreshWarehouses" title="ウェアハウスを更新">
                             <i class="bi bi-arrow-clockwise"></i>
                         </button>
                     </div>
-                    <small class="text-muted" id="warehouseHelp">Required for Unity Catalog operations. Stored globally for all users.</small>
+                    <small class="text-muted" id="warehouseHelp">Unity Catalogの操作に必要です。全ユーザー共通で保存されます。</small>
                 </div>
 
                 <div class="mb-0">
                     <button type="button" class="btn btn-sm btn-outline-primary" id="btnTestConnection">
-                        <i class="bi bi-plug me-1"></i> Test Connection
+                        <i class="bi bi-plug me-1"></i> 接続テスト
                     </button>
                     <div id="connectionResult" class="mt-3 hidden-initial"></div>
                 </div>
@@ -126,16 +126,16 @@
                 <div class="alert alert-info small d-flex align-items-start mb-3" role="alert">
                     <i class="bi bi-info-circle me-2 mt-1"></i>
                     <div>
-                        App-level access is managed in
-                        <strong>Databricks &rarr; App permissions</strong>. This list
-                        mirrors the principals that currently have a permission on the
-                        OntoBricks app. To grant per-domain roles (Viewer / Editor /
-                        Builder), use <strong>Registry &rarr; Teams</strong>.
+                        アプリレベルのアクセスは
+                        <strong>Databricks &rarr; アプリ権限</strong> で管理されます。このリストは
+                        OntoBricksアプリに現在権限を持つプリンシパルを表示します。
+                        ドメインごとのロール（閲覧者 / 編集者 / ビルダー）を付与するには
+                        <strong>レジストリ &rarr; チーム</strong> を使用してください。
                     </div>
                 </div>
 
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                    <h6 class="mb-0"><i class="bi bi-people me-1"></i> App Principals</h6>
+                    <h6 class="mb-0"><i class="bi bi-people me-1"></i> アプリプリンシパル</h6>
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-sm btn-outline-secondary" id="btnRefreshPermissions" title="Refresh">
                             <i class="bi bi-arrow-clockwise"></i>
@@ -145,7 +145,7 @@
 
                 <div id="permissionsTableContainer">
                     <div class="text-center text-muted small py-4">
-                        <span class="spinner-border spinner-border-sm me-1"></span> Loading app principals...
+                        <span class="spinner-border spinner-border-sm me-1"></span> アプリプリンシパルを読み込み中...
                     </div>
                 </div>
             </div>
