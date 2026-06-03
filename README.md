@@ -103,6 +103,7 @@ FastAPIルート (src/api/, src/back/routes/)
 - SQLウェアハウス（IDが必要）
 - **Unity Catalog ボリューム**（ドメインレジストリ用）
 - **Databricks Lakebase Autoscaling**（v0.4.0以降、レジストリとグラフDB用。省略可能 — ボリュームのみモードで動作）
+  > ⚠️ **注意**: Lakebase Autoscaling は 2026年6月時点で **AWS ap-northeast-1 リージョンでは未提供**。そのため本リポジトリのデフォルトデプロイターゲットは `dev`（ボリュームのみモード）に設定されている。Lakebase が ap-northeast-1 で利用可能になった場合は `DEFAULT_DAB_TARGET="dev-lakebase"` に変更すること（`scripts/deploy.config.sh` 参照）。
 - Databricks CLI >= 1.0.0（`brew install databricks`）
 
 ---

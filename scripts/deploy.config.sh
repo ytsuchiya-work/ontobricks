@@ -65,6 +65,11 @@ DEFAULT_APP_RESOURCE_KEY="ontobricks_dev_app"
 DEFAULT_MCP_APP_RESOURCE_KEY="mcp_ontobricks_app"
 
 # 2. DAB target
+# NOTE: "dev" (Volume-only) が選択されている理由:
+#   Databricks Lakebase (Autoscaling Postgres) は 2026年6月時点で
+#   AWS ap-northeast-1 リージョンでは未提供。
+#   Lakebase が利用可能になった場合は DEFAULT_DAB_TARGET="dev-lakebase" に変更し、
+#   以下の LAKEBASE_* 変数を適切な値に設定すること。
 DEFAULT_DAB_TARGET="dev"
 
 # 3. DAB variable overrides
@@ -72,6 +77,8 @@ DEFAULT_WAREHOUSE_ID="e351c2d1b16eae95"
 DEFAULT_REGISTRY_CATALOG="classic_stable_ytcy_catalog"
 DEFAULT_REGISTRY_SCHEMA="ontobricks"
 DEFAULT_REGISTRY_VOLUME="registry"
+# Lakebase 設定 — AWS ap-northeast-1 では Lakebase 未提供のためプレースホルダー。
+# 将来 Lakebase が利用可能になった際に実際の値を設定すること。
 DEFAULT_LAKEBASE_PROJECT="ontobricks-ytcy"
 DEFAULT_LAKEBASE_BRANCH="production"
 # get this value with databricks postgres list-databases "projects/{DEFAULT_LAKEBASE_PROJECT}/branches/{DEFAULT_LAKEBASE_BRANCH}" -o json
@@ -199,22 +206,22 @@ export APP_REGISTRY_CATALOG="${APP_REGISTRY_CATALOG:-$DEFAULT_APP_REGISTRY_CATAL
 export APP_REGISTRY_SCHEMA="${APP_REGISTRY_SCHEMA:-$DEFAULT_APP_REGISTRY_SCHEMA}"
 export APP_REGISTRY_VOLUME="${APP_REGISTRY_VOLUME:-$DEFAULT_APP_REGISTRY_VOLUME}"
 
-# Lakebase Postgres schema (tracks LAKEBASE_REGISTRY_SCHEMA from
-# section 3 by default — must match the schema actually GRANTed by
-# `bootstrap-lakebase-perms.sh`).
-export APP_LAKEBASE_SCHEMA="${APP_LAKEBASE_SCHEMA:-$LAKEBASE_REGISTRY_SCHEMA}"
-
-# Lakebase Postgres database name — must match the actual ``postgres_database``
-# of the bound ``db-…`` resource (i.e. the datname, not the schema name).
-# Use LAKEBASE_BOOTSTRAP_DATABASE which tracks the real datname.
-export APP_LAKEBASE_DATABASE="${APP_LAKEBASE_DATABASE:-$LAKEBASE_BOOTSTRAP_DATABASE}"
-
-# Lakebase project (autoscaling instance name) — informational in deployed app.
-export APP_LAKEBASE_PROJECT="${APP_LAKEBASE_PROJECT:-$LAKEBASE_PROJECT}"
-
-# Lakebase branch deployed to (used by LakebaseAuth host-resolution
-# fallback when PGHOST is not injected — e.g. local dev without binding).
-export APP_LAKEBASE_BRANCH="${APP_LAKEBASE_BRANCH:-$LAKEBASE_BRANCH}"
+# Lakebase app.yaml ランタイムフォールバック
+# ─────────────────────────────────────────────────────────────────────
+# 重要: AWS ap-northeast-1 では Databricks Lakebase (Autoscaling Postgres) が
+#       2026年6月時点で未提供のため、以下をすべて空文字に設定している。
+#       空の場合、app.yaml テンプレートレンダラーが該当行を省略し、
+#       アプリ起動時の Lakebase 接続試行（最大5分タイムアウト）が発生しない。
+#
+#       Lakebase が ap-northeast-1 で利用可能になったら:
+#         1. DEFAULT_DAB_TARGET="dev-lakebase" に変更
+#         2. 以下の変数を実際の Lakebase インスタンス値に設定
+#         3. make deploy で再デプロイ
+# ─────────────────────────────────────────────────────────────────────
+export APP_LAKEBASE_SCHEMA="${APP_LAKEBASE_SCHEMA:-}"
+export APP_LAKEBASE_DATABASE="${APP_LAKEBASE_DATABASE:-}"
+export APP_LAKEBASE_PROJECT="${APP_LAKEBASE_PROJECT:-}"
+export APP_LAKEBASE_BRANCH="${APP_LAKEBASE_BRANCH:-}"
 
 # Lakebase managed-synced: UC catalog for the Lakeflow synced-table registration.
 # Leave empty to let OntoBricks auto-resolve the catalog from the registry

@@ -229,12 +229,19 @@ resources:
 
 targets:
   # Default sandbox: Volume-only registry backend.
+  # NOTE: このターゲットが既定値になっている理由:
+  #   Databricks Lakebase (Autoscaling Postgres) は 2026年6月時点で
+  #   AWS ap-northeast-1 リージョンでは未提供。
+  #   Lakebase が利用可能になったら ``dev-lakebase`` ターゲットに切り替えること。
   dev:
     mode: development
     default: true
 
   # Sandbox with the Lakebase Postgres registry backend bound
   # (Autoscaling-only). Uses the Apps ``postgres`` resource type
+  # NOTE: Lakebase (Autoscaling Postgres) は 2026年6月時点で
+  #   AWS ap-northeast-1 リージョンでは未提供のため、このターゲットは使用不可。
+  #   Lakebase が ap-northeast-1 で利用可能になった場合に使用すること。
   # with ``branch`` + ``database`` resource paths — both must be
   # full project-relative paths, not bare names. See the
   # ``lakebase_*`` variables above; paths are composed automatically.
